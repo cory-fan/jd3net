@@ -1,0 +1,61 @@
+# ------------------------------------------------------------------------
+# Copyright (c) 2022 megvii-model. All Rights Reserved.
+# ------------------------------------------------------------------------
+# Modified from BasicSR (https://github.com/xinntao/BasicSR)
+# Copyright 2018-2020 BasicSR Authors
+# ------------------------------------------------------------------------
+# general settings
+name: Isotropic64_Test
+model_type: ImageRestorationModel
+scale: 1
+num_gpu: 1 # set num_gpu: 0 for cpu mode
+manual_seed: 10
+
+# dataset and data loader settings
+datasets:
+
+  test:
+    name: gopro-test
+    type: BSD100HybridEVSDataset
+
+    dataroot_gt: ./datasets/GoPro/test/target.lmdb #this doesn't do anything
+    dataroot_lq: ./datasets/GoPro/test/input.lmdb #this doesn't do anything
+
+    io_backend:
+      type: folder
+
+# network structures
+network_g:
+  type: IsotropicHybridEVSNet
+  width: 128
+  downsample: 4
+  img_channel: 3
+  depth: 152
+  start_kernel_size: 3
+
+# path
+path:
+  pretrain_network_g: /home/featurize/work/ovt/NAFNet/experiments/IsotropicNet-HybridEVS/models/net_g_latest.pth
+  strict_load_g: true
+  resume_state: ~
+
+# validation settings
+val:
+  save_img: true
+  grids: false
+
+
+  metrics:
+    psnr: # metric name, can be arbitrary
+      type: calculate_psnr
+      crop_border: 0
+      test_y_channel: false
+    ssim:
+      type: calculate_ssim
+      crop_border: 0
+      test_y_channel: false
+
+# dist training settings
+dist_params:
+  backend: nccl
+  port: 29500

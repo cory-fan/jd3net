@@ -1,0 +1,110 @@
+# ------------------------------------------------------------------------
+# Copyright (c) 2022 megvii-model. All Rights Reserved.
+# ------------------------------------------------------------------------
+# Modified from BasicSR (https://github.com/xinntao/BasicSR)
+# Copyright 2018-2020 BasicSR Authors
+# ------------------------------------------------------------------------
+# general settings
+name: IsotropicNet-64-Bayer
+model_type: ImageRestorationModel
+scale: 1
+num_gpu: 1
+manual_seed: 10
+
+datasets:
+  train:
+    name: ImageNet
+    type: ImageNetDataset
+    # dataroot_gt: /home/featurize/data/folderdata/train/gt/
+    # dataroot_lq: /home/featurize/data/folderdata/train/gt/
+
+    filename_tmpl: '{}'
+    io_backend:
+      type: lmdb
+
+    gt_size: 128
+    use_flip: true
+    use_rot: true
+
+    # data loader
+    use_shuffle: true
+    num_worker_per_gpu: 8
+    batch_size_per_gpu: 20
+    dataset_enlarge_ratio: 1
+    prefetch_mode: ~
+
+  val:
+    name: div2k
+    type: CustomValDataset
+    # dataroot_gt: /home/featurize/data/folderdata/val/gt/
+    # dataroot_lq: /home/featurize/data/folderdata/val/lq/
+    io_backend:
+      type: lmdb
+
+
+network_g:
+  type: IsotropicNet
+  width: 128
+  downsample: 4
+  img_channel: 3
+  depth: 152
+  stochastic_depth: 0
+  start_kernel_size: 3
+
+# path
+path:
+  pretrain_network_g: ~
+  strict_load_g: False
+  resume_state: ~
+
+# training settings
+train:
+  optim_g:
+    type: AdamW
+    lr: !!float 1e-3
+    weight_decay: !!float 0
+    betas: [0.9, 0.9]
+
+  scheduler:
+    type: TrueCosineAnnealingLR
+    T_max: 1000000
+    eta_min: !!float 1e-7
+
+  total_iter: 1000000
+  warmup_iter: -1 # no warm up
+
+  # losses
+  pixel_opt:
+    type: PSNRLoss
+    loss_weight: 1
+    reduction: mean
+
+# validation settings
+val:
+  val_freq: !!float 5e3
+  save_img: false
+
+
+  metrics:
+    psnr: # metric name, can be arbitrary
+      type: calculate_psnr
+      crop_border: 0
+      test_y_channel: false
+    ssim:
+      type: calculate_ssim
+      crop_border: 0
+      test_y_channel: false
+
+# logging settings
+logger:
+  print_freq: 250
+  save_checkpoint_freq: !!float 5e3
+  use_tb_logger: true
+  wandb:
+    project: ~
+    resume_id: ~
+
+# dist training settings
+dist_params:
+  backend: nccl
+  port: 29500

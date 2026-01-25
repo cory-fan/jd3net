@@ -1,0 +1,10 @@
+scikit-image
+opencv-python
+exifread
+rawpy
+patchify
+colour_demosaicing
+wandb
+pytorch_warmup
+numpy==1.26.4
+imageio
