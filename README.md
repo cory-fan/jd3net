@@ -26,4 +26,3 @@ For evaluation, download a dataset (Kodak24 or etc), and then create a demosaic/
 
 From within demosaic directory, test with:
 python basicsr/test.py -opt *insert your config file here*
-# jd3net
